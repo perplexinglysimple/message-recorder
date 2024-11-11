@@ -1,0 +1,17 @@
+[package]
+name = "message-recorder"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+futures = { version = "0.3", default-features = false, features = ["alloc"] }
+tmq = "0.5.0"
+prost = "0.13.3"
+prost-types = "0.13.3"
+tonic = "0.12.3"
+byteorder = "1.4"
+log = "0.4"
+env_logger = "0.10"
+gag = "1.0.0"
+tempfile = "3.3"
