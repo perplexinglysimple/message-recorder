@@ -138,7 +138,7 @@ impl ZmqConnection {
                         SinksEnum::ConsoleSink(cs) => cs.write(&data)?,
                         SinksEnum::FileSink(fs) => fs.write(&data)?,
                         SinksEnum::MockSink(ms) => ms.write(&data)?,
-                        _ => panic!("Unexpected enum type!"), // Handle other sink types if any
+                        SinksEnum::CompressedFileSink(cs) => cs.write(data)?,
                     };
                 }
                 Ok(())

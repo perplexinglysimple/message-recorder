@@ -2,11 +2,13 @@ mod process_zmq_connection;
 mod sink;
 mod sinks;
 mod zmq_connection;
+mod config;
 
 use env_logger;
 use log::{error, info};
 use sinks::console_sink::ConsoleSink;
 use sinks::file_sink::FileSink;
+use sinks::compressed_file_sink::CompressedFileSink;
 use std::sync::Arc;
 
 use crate::process_zmq_connection::process_zmq_connection;
@@ -22,45 +24,12 @@ async fn main() {
         .init();
     info!("Starting up");
 
-    // Define multiple ZeroMQ hosts, ports, and topics
-    let subscriptions = vec![
-        ZmqConnection::new_with_owned(
-            "localhost".to_string(),
-            "5555".to_string(),
-            Some("topic".to_string()),
-            "test".to_string(),
-        ),
-        ZmqConnection::new("localhost", "5557", Some("topic"), "test2"),
-        ZmqConnection::new("localhost", "5556", None, "test3"),
-    ];
-
-    // Register sinks for each connection
-    let subscriptions: Vec<Arc<ZmqConnection>> = subscriptions
-        .into_iter()
-        .map(|connection| {
-            if let Err(e) = connection.register_new_sink(
-                "File sink".to_string(),
-                Box::new(sink::SinksEnum::FileSink(
-                    FileSink::new(connection.get_filename(), MAX_FLUSH_TIME).unwrap(),
-                )),
-            ) {
-                error!("Failed to register File sink: {}", e);
-            }
-            if let Err(e) = connection.register_new_sink(
-                "Console sink".to_string(),
-                Box::new(sink::SinksEnum::ConsoleSink(ConsoleSink {})),
-            ) {
-                error!("Failed to register Console sink: {}", e);
-            }
-            Arc::new(connection)
-        })
-        .collect();
+    let subscriptions = config::read_config("config/config.yml");
 
     let mut handles = vec![];
 
     // Spawn a Tokio task for each subscription
     for connection in subscriptions {
-        let connection = Arc::clone(&connection);
         info!("Subscribing to connection: {:?}", connection);
 
         let handle = tokio::spawn(async move {

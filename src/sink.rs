@@ -1,5 +1,6 @@
 use crate::sinks::console_sink::ConsoleSink;
 use crate::sinks::file_sink::FileSink;
+use crate::sinks::compressed_file_sink::CompressedFileSink;
 
 use log::debug;
 
@@ -45,6 +46,7 @@ impl Sink for MockSink {
 pub enum SinksEnum {
     ConsoleSink(ConsoleSink),
     FileSink(FileSink),
+    CompressedFileSink(CompressedFileSink),
     MockSink(MockSink),
 }
 
@@ -54,6 +56,7 @@ impl SinksEnum {
             SinksEnum::MockSink(sink) => sink.write(data),
             SinksEnum::ConsoleSink(sink) => sink.write(data),
             SinksEnum::FileSink(sink) => sink.write(data),
+            SinksEnum::CompressedFileSink(sink) => sink.write(data),
         }
     }
 }

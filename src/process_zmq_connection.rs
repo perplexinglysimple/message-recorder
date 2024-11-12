@@ -1,12 +1,11 @@
 use crate::zmq_connection::{MessageRecorderError, ZmqConnection};
 use futures::TryStreamExt;
 use log::{debug, error, info};
-use prost::Message;
 use std::sync::Arc;
 use tmq::{subscribe, Context};
 
 pub async fn process_zmq_connection(
-    connection: &Arc<ZmqConnection>,
+    connection: &ZmqConnection,
 ) -> Result<(), MessageRecorderError> {
     // Build the connection string
     let host = connection.get_host();

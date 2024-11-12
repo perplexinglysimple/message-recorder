@@ -1,0 +1,33 @@
+
+connections:
+- addr: "localhost"
+  port: 5555
+  topic: "test"
+  file_extension: "rec"
+  sinks:
+    - sink_type: "File Sink"
+      name: "File_Sink_1"
+      flush_time: 5
+    - sink_type: "Console Sink"
+      name: "Console_Sink_1"
+- addr: "localhost"
+  port: 5556
+  topic: "test"
+  file_extension: "rec"
+  sinks:
+    - sink_type: "File Sink"
+      name: "File_Sink_2"
+    - sink_type: "Console Sink"
+      name: "Console_Sink_2"
+- addr: "localhost"
+  port: 5557
+  topic: "test"
+  file_extension: "rec"
+  sinks:
+    - sink_type: "Console Sink"
+      name: "Console_Sink_3"
+- addr: "localhost"
+  port: 5558
+  topic: "test"
+  file_extension: "rec"
+  sinks:
