@@ -1,7 +1,6 @@
 use crate::zmq_connection::{MessageRecorderError, ZmqConnection};
 use futures::TryStreamExt;
 use log::{debug, error, info};
-use std::sync::Arc;
 use tmq::{subscribe, Context};
 
 pub async fn process_zmq_connection(

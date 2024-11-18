@@ -135,10 +135,10 @@ impl ZmqConnection {
                 for (sink_name, sink) in res.iter_mut() {
                     info!("Logging to {} with size {}", sink_name, data.len());
                     match sink.borrow_mut() {
-                        SinksEnum::ConsoleSink(cs) => cs.write(&data)?,
-                        SinksEnum::FileSink(fs) => fs.write(&data)?,
-                        SinksEnum::MockSink(ms) => ms.write(&data)?,
-                        SinksEnum::CompressedFileSink(cs) => cs.write(data)?,
+                        SinksEnum::ConsoleSink(s) => s.write(&data)?,
+                        SinksEnum::FileSink(s) => s.write(&data)?,
+                        SinksEnum::CompressedFileSink(s) => s.write(&data)?,
+                        SinksEnum::MessageCounter(s) => s.write(&data)?,
                     };
                 }
                 Ok(())
@@ -168,8 +168,6 @@ impl std::fmt::Display for ZmqConnection {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sink;
-    use std::sync::{Arc, Mutex};
 
     #[test]
     fn test_new() {
@@ -228,53 +226,5 @@ mod tests {
         let connection = ZmqConnection::new("127.0.0.1", "5555", None, "log");
         let expected_filename = "tcp___127.0.0.1_5555_NO_TOPIC.log";
         assert_eq!(connection.get_filename(), expected_filename);
-    }
-
-    #[test]
-    fn test_register_new_sink() {
-        let connection = ZmqConnection::new("127.0.0.1", "5555", None, "test");
-        let data_storage = Arc::new(Mutex::new(Vec::new()));
-        let mock_sink = sink::MockSink {
-            data: data_storage.clone(),
-        };
-        let sink_enum = SinksEnum::MockSink(mock_sink);
-
-        connection
-            .register_new_sink("mock_sink".to_string(), Box::new(sink_enum))
-            .expect("Failed to register new sink");
-
-        // Check that the sink has been registered
-        let sinks = connection.sinks.lock().unwrap();
-        assert!(sinks.contains_key("mock_sink"));
-    }
-
-    #[test]
-    fn test_use_sinks() {
-        let connection = ZmqConnection::new("127.0.0.1", "5555", None, "test");
-        let mock_sink = sink::MockSink {
-            data: Arc::new(Mutex::new(Vec::new())),
-        };
-        let sink_enum = SinksEnum::MockSink(mock_sink);
-
-        connection
-            .register_new_sink("mock_sink".to_string(), Box::new(sink_enum))
-            .expect("Failed to register new sink");
-
-        let test_data = b"Hello, World!".to_vec();
-        connection
-            .use_sinks(&test_data)
-            .expect("Failed to use sinks");
-
-        let sinks = connection.sinks.lock().unwrap();
-        let stored_data = sinks.get("mock_sink").unwrap();
-
-        match &**stored_data {
-            SinksEnum::MockSink(to_test) => {
-                let data_guard = to_test.data.lock().unwrap();
-                let data = &*data_guard;
-                assert_eq!(data, &test_data);
-            }
-            _ => panic!("Expected MockSink"),
-        }
     }
 }

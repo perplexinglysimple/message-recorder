@@ -1,20 +1,14 @@
+mod message_decoding;
 mod process_zmq_connection;
 mod sink;
 mod sinks;
+mod utils;
 mod zmq_connection;
-mod config;
 
 use env_logger;
 use log::{error, info};
-use sinks::console_sink::ConsoleSink;
-use sinks::file_sink::FileSink;
-use sinks::compressed_file_sink::CompressedFileSink;
-use std::sync::Arc;
 
 use crate::process_zmq_connection::process_zmq_connection;
-use crate::zmq_connection::ZmqConnection;
-
-const MAX_FLUSH_TIME: i32 = 5;
 
 #[tokio::main(flavor = "multi_thread")]
 async fn main() {
@@ -24,7 +18,7 @@ async fn main() {
         .init();
     info!("Starting up");
 
-    let subscriptions = config::read_config("config/config.yml");
+    let subscriptions = utils::config::read_config("config/config.yml");
 
     let mut handles = vec![];
 

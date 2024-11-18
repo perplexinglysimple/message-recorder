@@ -2,6 +2,7 @@ FROM rust as builder
 
 WORKDIR /usr/src/myapp
 
+RUN apt install protoc
 COPY . .
 RUN cargo test
 RUN cargo install --path .

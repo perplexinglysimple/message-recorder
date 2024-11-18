@@ -11,6 +11,10 @@ impl Sink for ConsoleSink {
         );
         Ok(())
     }
+
+    fn flush(&mut self) -> Result<(), SinkError> {
+        Ok(())
+    }
 }
 
 // stdout is not being captured correctly. Testing this also seems not necassary.

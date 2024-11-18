@@ -26,6 +26,9 @@ connections:
   sinks:
     - sink_type: "Console Sink"
       name: "Console_Sink_3"
+    - sink_type: "Compressed Sink"
+      name: "Console_Sink_4"
+      flush_time: 5
 - addr: "localhost"
   port: 5558
   topic: "test"

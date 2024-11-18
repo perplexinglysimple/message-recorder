@@ -1,8 +1,7 @@
+use crate::sinks::compressed_file_sink::CompressedFileSink;
 use crate::sinks::console_sink::ConsoleSink;
 use crate::sinks::file_sink::FileSink;
-use crate::sinks::compressed_file_sink::CompressedFileSink;
-
-use log::debug;
+use crate::sinks::message_counter::MessageCounter;
 
 #[derive(Debug)]
 pub enum SinkError {
@@ -25,21 +24,7 @@ impl std::fmt::Display for SinkError {
 
 pub trait Sink: Sync + Send {
     fn write(&mut self, data: &Vec<u8>) -> Result<(), SinkError>;
-}
-
-#[derive(Debug)]
-pub struct MockSink {
-    pub data: std::sync::Arc<std::sync::Mutex<Vec<u8>>>,
-}
-
-impl Sink for MockSink {
-    fn write(&mut self, data: &Vec<u8>) -> Result<(), SinkError> {
-        let mut stored_data = self.data.lock().unwrap();
-        debug!("Before {:?}", stored_data);
-        stored_data.clone_from(&data);
-        debug!("After {:?}", stored_data);
-        Ok(())
-    }
+    fn flush(&mut self) -> Result<(), SinkError>;
 }
 
 #[derive(Debug)]
@@ -47,16 +32,5 @@ pub enum SinksEnum {
     ConsoleSink(ConsoleSink),
     FileSink(FileSink),
     CompressedFileSink(CompressedFileSink),
-    MockSink(MockSink),
-}
-
-impl SinksEnum {
-    fn write(&mut self, data: &Vec<u8>) -> Result<(), SinkError> {
-        match self {
-            SinksEnum::MockSink(sink) => sink.write(data),
-            SinksEnum::ConsoleSink(sink) => sink.write(data),
-            SinksEnum::FileSink(sink) => sink.write(data),
-            SinksEnum::CompressedFileSink(sink) => sink.write(data),
-        }
-    }
+    MessageCounter(MessageCounter),
 }

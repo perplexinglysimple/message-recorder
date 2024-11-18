@@ -1,70 +1,45 @@
-use std::io::Write;
-use std::time::{Duration, Instant};
-
 use byteorder::{BigEndian, WriteBytesExt};
-use log::{debug, error, info};
+use getset::Getters;
+use log::info;
 
 use crate::sink::{Sink, SinkError};
+use crate::sinks::raw_file_sink::RawFileSink;
 
-#[derive(Debug)]
+#[derive(Debug, Getters)]
 pub struct FileSink {
-    filename: String,
-    writer: std::io::BufWriter<std::fs::File>,
-    flush_time: Duration,
-    last_flush: Instant,
+    file_handle: RawFileSink,
 }
 
 impl Sink for FileSink {
     fn write(&mut self, data: &Vec<u8>) -> Result<(), SinkError> {
         info!(
-            "Writing to file {}: {}",
-            self.filename,
-            String::from_utf8(data.clone()).expect("Failed to write to the file")
+            "Writing to file {}: {:?}",
+            self.file_handle.filename(),
+            data.clone()
         );
         let mut data_size_vec = vec![];
-        WriteBytesExt::write_u64::<BigEndian>(&mut data_size_vec, data.len().try_into().unwrap())?;
-        match self.writer.write_all(&data_size_vec) {
-            Ok(_) => info!(
-                "Wrote down {} bytes to {}",
-                data_size_vec.len(),
-                self.filename
-            ),
-            Err(e) => {
-                error!(
-                    "Error writing buffer for {}: {} with size {}",
-                    self.filename,
-                    e,
-                    data_size_vec.len()
-                );
-                return Err(SinkError::IoError(e));
-            }
-        };
-        self.writer.write_all(data.as_slice())?;
-        if self.last_flush.elapsed() >= self.flush_time {
-            match self.writer.flush() {
-                Ok(_) => info!("Flushing writer"),
-                Err(e) => error!("Error flushing buffer for {}: {}", self.filename, e),
-            };
+        WriteBytesExt::write_u64::<BigEndian>(&mut data_size_vec, data.len() as u64)?;
+        self.file_handle.write(&data_size_vec)?;
+        self.file_handle.write(data)?;
+        Ok(())
+    }
 
-            // Reset the last flush timer
-            self.last_flush = Instant::now();
-        }
+    fn flush(&mut self) -> Result<(), SinkError> {
+        self.file_handle.flush()?;
         Ok(())
     }
 }
 
 impl FileSink {
     pub fn new(filename: String, flush_time_s: i32) -> std::io::Result<Self> {
-        let file = std::fs::File::create(&filename)?; // Opens or creates the file
-        let writer = std::io::BufWriter::new(file); // Wraps the file in BufWriter
-        let flush_time = Duration::new(flush_time_s.try_into().unwrap(), 0);
-        let last_flush = Instant::now();
+        let file_handle = RawFileSink::new(filename, flush_time_s)?;
         Ok(FileSink {
-            filename,
-            writer,
-            flush_time,
-            last_flush,
+            file_handle: file_handle,
         })
+    }
+
+    pub fn filename(&self) -> &String {
+        self.file_handle.filename()
     }
 }
 

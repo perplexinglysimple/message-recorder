@@ -8,7 +8,7 @@ socket = context.socket(zmq.PUB)
 # Define the connection address and topic
 port = "5557"  # Change this to match the port you want to test
 address = f"tcp://localhost:{port}"
-topic = "topic"  # Use the topic expected by your Rust subscriber
+topic = "test"  # Use the topic expected by your Rust subscriber
 
 # Connect the socket
 socket.bind(address)
