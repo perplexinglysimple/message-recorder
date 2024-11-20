@@ -23,7 +23,7 @@ try:
         socket.send_string(topic, zmq.SNDMORE)
         socket.send_string(message)
         print(f"Sent: {message}")
-        
+
         counter += 1
         time.sleep(1)  # Wait 1 second between messages
 except KeyboardInterrupt:
