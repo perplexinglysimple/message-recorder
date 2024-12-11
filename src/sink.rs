@@ -2,6 +2,7 @@ use crate::sinks::compressed_file_sink::CompressedFileSink;
 use crate::sinks::console_sink::ConsoleSink;
 use crate::sinks::file_sink::FileSink;
 use crate::sinks::message_counter::MessageCounter;
+use crate::sinks::prometheus_sink::PrometheusSink;
 
 #[derive(Debug)]
 pub enum SinkError {
@@ -33,4 +34,5 @@ pub enum SinksEnum {
     FileSink(FileSink),
     CompressedFileSink(CompressedFileSink),
     MessageCounter(MessageCounter),
+    PrometheusSink(PrometheusSink),
 }

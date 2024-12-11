@@ -4,7 +4,6 @@ use crate::sink::{Sink, SinkError};
 use std::borrow::BorrowMut;
 
 use crate::sink::SinksEnum;
-use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 #[derive(Debug)]
@@ -56,7 +55,7 @@ pub struct ZmqConnection {
     port: String,
     topic: Option<String>,
     file_extension: String,
-    sinks: Arc<Mutex<HashMap<String, Box<SinksEnum>>>>,
+    sinks: Arc<Mutex<Vec<SinksEnum>>>,
 }
 
 impl ZmqConnection {
@@ -66,7 +65,7 @@ impl ZmqConnection {
             port: port.to_string(),
             topic: topic.map(|t| t.to_string()),
             file_extension: file_extension.to_string(),
-            sinks: Arc::new(Mutex::new(HashMap::new())),
+            sinks: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -81,7 +80,7 @@ impl ZmqConnection {
             port,
             topic,
             file_extension,
-            sinks: Arc::new(Mutex::new(HashMap::new())),
+            sinks: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -112,14 +111,10 @@ impl ZmqConnection {
         .replace("\\", "_")
     }
 
-    pub fn register_new_sink(
-        &self,
-        sink_name: String,
-        new_sink: Box<SinksEnum>,
-    ) -> Result<(), MessageRecorderError> {
+    pub fn register_new_sink(&self, new_sink: SinksEnum) -> Result<(), MessageRecorderError> {
         match self.sinks.lock() {
             Ok(mut res) => {
-                res.insert(sink_name, new_sink);
+                res.push(new_sink);
                 Ok(())
             }
             Err(e) => Err(MessageRecorderError::PoisonError(format!(
@@ -132,13 +127,14 @@ impl ZmqConnection {
     pub fn use_sinks(&self, data: &Vec<u8>) -> Result<(), MessageRecorderError> {
         match self.sinks.lock() {
             Ok(mut res) => {
-                for (sink_name, sink) in res.iter_mut() {
-                    info!("Logging to {} with size {}", sink_name, data.len());
+                for sink in res.iter_mut() {
+                    info!("Logging to {:?} with size {}", sink, data.len());
                     match sink.borrow_mut() {
                         SinksEnum::ConsoleSink(s) => s.write(&data)?,
                         SinksEnum::FileSink(s) => s.write(&data)?,
                         SinksEnum::CompressedFileSink(s) => s.write(&data)?,
                         SinksEnum::MessageCounter(s) => s.write(&data)?,
+                        SinksEnum::PrometheusSink(s) => s.write(&data)?,
                     };
                 }
                 Ok(())
@@ -154,7 +150,7 @@ impl ZmqConnection {
 impl std::fmt::Display for ZmqConnection {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let sink_number = match self.sinks.lock() {
-            Ok(res) => res.keys().len().to_string(),
+            Ok(res) => res.len().to_string(),
             Err(_) => "Could not lock sink lock".to_string(),
         };
         write!(

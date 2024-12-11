@@ -1,6 +1,6 @@
 use byteorder::{BigEndian, WriteBytesExt};
 use getset::Getters;
-use log::info;
+use log::{debug, info, trace};
 
 use crate::sink::{Sink, SinkError};
 use crate::sinks::raw_file_sink::RawFileSink;
@@ -12,11 +12,8 @@ pub struct FileSink {
 
 impl Sink for FileSink {
     fn write(&mut self, data: &Vec<u8>) -> Result<(), SinkError> {
-        info!(
-            "Writing to file {}: {:?}",
-            self.file_handle.filename(),
-            data.clone()
-        );
+        info!("Writing to file {}: len={}", self.filename(), data.len());
+        trace!("Writing to file {}: {:?}", self.filename(), data.clone());
         let mut data_size_vec = vec![];
         WriteBytesExt::write_u64::<BigEndian>(&mut data_size_vec, data.len() as u64)?;
         self.file_handle.write(&data_size_vec)?;
@@ -25,6 +22,7 @@ impl Sink for FileSink {
     }
 
     fn flush(&mut self) -> Result<(), SinkError> {
+        debug!("Flushing data in file: {}", self.filename());
         self.file_handle.flush()?;
         Ok(())
     }

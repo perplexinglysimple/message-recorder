@@ -24,7 +24,8 @@ impl Sink for CompressedFileSink {
         match _encoder.finish() {
             Ok(res) => {
                 debug!(
-                    "Compressed the message from size {} to size {}",
+                    "Compressed the message for file {} from size {} to size {}",
+                    self.filename(),
                     data.len(),
                     res.len()
                 );
