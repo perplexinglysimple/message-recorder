@@ -1,6 +1,6 @@
 
 connections:
-- addr: "localhost"
+- addr: "test_service_1"
   port: 5555
   topic: "test"
   file_extension: "rec"
@@ -10,7 +10,7 @@ connections:
       flush_time: 5
     - sink_type: "Console Sink"
       name: "Console_Sink_1"
-- addr: "localhost"
+- addr: "test_service_2"
   port: 5556
   topic: "test"
   file_extension: "rec"
@@ -19,7 +19,7 @@ connections:
       name: "File_Sink_2"
     - sink_type: "Console Sink"
       name: "Console_Sink_2"
-- addr: "localhost"
+- addr: "test_service_3"
   port: 5557
   topic: "test"
   file_extension: "rec"
@@ -29,7 +29,7 @@ connections:
     - sink_type: "Compressed Sink"
       name: "Console_Sink_4"
       flush_time: 5
-- addr: "localhost"
+- addr: "test_service_4"
   port: 5558
   topic: "test"
   file_extension: "rec"

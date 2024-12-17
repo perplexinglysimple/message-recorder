@@ -20,6 +20,7 @@ struct Sink {
     name: Option<String>,
     flush_time: Option<i32>,
     compression_level: Option<i32>,
+    filename: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,7 +75,7 @@ pub fn read_config(
                 let sink_enum = match sink_cfg.sink_type.as_str() {
                     "File Sink" => SinksEnum::FileSink(
                         FileSink::new(
-                            create_filepath(zmq_conn.get_filename(), &out_dir),
+                            create_filepath(sink_cfg.filename.unwrap_or(zmq_conn.get_filename()), &out_dir),
                             sink_cfg.flush_time.unwrap_or(0),
                         )
                         .unwrap(),
@@ -82,7 +83,7 @@ pub fn read_config(
                     "Console Sink" => SinksEnum::ConsoleSink(ConsoleSink {}),
                     "Compressed Sink" => SinksEnum::CompressedFileSink(
                         CompressedFileSink::new(
-                            create_filepath(zmq_conn.get_filename(), &out_dir),
+                            create_filepath(sink_cfg.filename.unwrap_or(zmq_conn.get_filename()), &out_dir),
                             sink_cfg.flush_time.unwrap_or(0),
                             sink_cfg.compression_level.unwrap_or(1),
                         )

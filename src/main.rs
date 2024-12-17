@@ -8,7 +8,7 @@ mod zmq_connection;
 use clap::Parser;
 use env_logger;
 use log::{error, info};
-use prometheus_client::registry::{self, Registry};
+use prometheus_client::registry::Registry;
 use prometheus_client::encoding::text::encode;
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 use std::sync::Arc;

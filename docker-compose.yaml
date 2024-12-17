@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Main application service
+  app:
+    build:
+      dockerfile: Dockerfile
+    container_name: message_recorder
+
+  test_service_1:
+    build:
+      dockerfile: test/Dockerfile
+    container_name: test_service_1_container
+    ports:
+      - "5555:5555"
+
+  test_service_2:
+    build:
+      dockerfile: test/Dockerfile
+    container_name: test_service_2_container
+    ports:
+      - "555:5556"
+
+  test_service_3:
+    build:
+      dockerfile: test/Dockerfile
+    container_name: test_service_3_container
+    ports:
+      - "5557:5557"
+
+  test_service_4:
+    build:
+      dockerfile: test/Dockerfile
+    container_name: test_service_4_container
+    ports:
+      - "5558:5558"
